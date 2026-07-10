@@ -469,6 +469,54 @@ body.a11y-reading-guide #readingGuide{display:block;}
 }
 .myorder-item .mo-status.done{background:var(--green-soft); color:var(--green);}
 .myorder-item .see-status{font-size:.78rem; color:var(--red); font-weight:700; cursor:pointer; background:none; border:none;}
+
+/* ===== AUTENTICAÇÃO — header ===== */
+.auth-area{position:relative; flex-shrink:0;}
+.auth-btn-login{
+  background:var(--red); color:var(--white); border:none; padding:9px 18px; border-radius:100px;
+  font-family:'Inter'; font-weight:700; font-size:.84rem; cursor:pointer; white-space:nowrap;
+}
+.auth-btn-login:hover{background:var(--red-dark);}
+.user-pill{
+  display:flex; align-items:center; gap:8px; background:var(--off); border:1px solid var(--line); border-radius:100px;
+  padding:5px 14px 5px 5px; cursor:pointer; font-family:'Inter'; font-weight:600; font-size:.84rem;
+}
+.user-pill:hover{border-color:var(--red);}
+.user-avatar{
+  width:28px; height:28px; border-radius:50%; background:var(--red); color:var(--white); font-family:'Space Mono';
+  font-weight:700; font-size:.78rem; display:flex; align-items:center; justify-content:center; flex-shrink:0;
+}
+.user-dropdown{
+  position:absolute; top:calc(100% + 10px); right:0; background:var(--white); border:1px solid var(--line);
+  border-radius:16px; box-shadow:0 16px 36px rgba(0,0,0,.14); width:200px; padding:8px; display:none; z-index:600;
+}
+.user-dropdown.open{display:block;}
+.user-dropdown button{
+  width:100%; text-align:left; background:none; border:none; padding:10px 12px; border-radius:10px; cursor:pointer;
+  font-family:'Inter'; font-size:.85rem; font-weight:600;
+}
+.user-dropdown button:hover{background:var(--off);}
+.user-dropdown button.logout{color:var(--red-dark);}
+@media (max-width:880px){
+  .user-pill span.uname{display:none;}
+}
+
+/* ===== BANCO DE DADOS DE TESTE ===== */
+.db-panel{border:1px solid var(--line); border-radius:20px; padding:24px; background:var(--off);}
+.db-stats{display:flex; gap:14px; flex-wrap:wrap; margin-bottom:18px;}
+.db-actions{display:flex; gap:10px; flex-wrap:wrap;}
+.db-json{
+  display:none; margin-top:16px; background:var(--ink); color:#B8ECD0; padding:16px; border-radius:14px;
+  font-family:'Space Mono'; font-size:.74rem; line-height:1.6; overflow-x:auto; max-height:340px; overflow-y:auto;
+  white-space:pre-wrap; word-break:break-word;
+}
+.db-json.open{display:block;}
+.conta-flash{animation:contaFlash 1.4s ease;}
+@keyframes contaFlash{
+  0%{box-shadow:0 0 0 0 rgba(201,0,77,.35);}
+  40%{box-shadow:0 0 0 14px rgba(201,0,77,0);}
+  100%{box-shadow:0 0 0 0 rgba(201,0,77,0);}
+}
 </style>
 </head>
 <body>
@@ -484,10 +532,12 @@ body.a11y-reading-guide #readingGuide{display:block;}
       <button data-target="precos" class="active">Preços</button>
       <button data-target="mercados">Mercados</button>
       <button data-target="pedidos">Pedidos</button>
+      <button data-target="conta">Conta</button>
       <button data-target="finalidade">Finalidade</button>
       <button data-target="tutorial">Tutorial</button>
       <button data-target="reportar">Reportar</button>
     </nav>
+    <div class="auth-area" id="authArea"></div>
   </div>
   <div class="ticker-wrap">
     <div class="ticker" id="tickerTrack"></div>
@@ -593,6 +643,101 @@ body.a11y-reading-guide #readingGuide{display:block;}
     </div>
 
     <div class="order-grid reveal" id="orderGrid"></div>
+  </div>
+</section>
+
+<!-- ===================== CONTA (login / cadastro) ===================== -->
+<section id="conta">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div class="eyebrow">Sua conta</div>
+      <h2>Entrar ou criar cadastro</h2>
+      <p>Crie uma conta para finalizar pedidos mais rápido e acompanhar seu histórico de compras no bairro.</p>
+    </div>
+
+    <div id="contaLoggedOut" class="reveal">
+      <div class="seg" id="contaTabs" style="width:fit-content; margin-bottom:24px;">
+        <button data-form="login" class="active">Já tenho conta</button>
+        <button data-form="cadastro">Criar conta</button>
+      </div>
+
+      <div class="form-panel active" id="form-login">
+        <form id="loginForm">
+          <div>
+            <label>E-mail</label>
+            <input type="email" id="li-email" required>
+          </div>
+          <div>
+            <label>Senha</label>
+            <input type="password" id="li-senha" required>
+          </div>
+          <p id="loginError" style="color:var(--red-dark); font-size:.8rem; display:none;">E-mail ou senha incorretos.</p>
+          <button type="submit" class="submit-btn">Entrar</button>
+        </form>
+      </div>
+
+      <div class="form-panel" id="form-cadastro">
+        <form id="cadastroForm">
+          <div>
+            <label>Nome</label>
+            <input type="text" id="ca-nome" required>
+          </div>
+          <div>
+            <label>E-mail</label>
+            <input type="email" id="ca-email" required>
+          </div>
+          <div>
+            <label>Telefone / WhatsApp</label>
+            <input type="tel" id="ca-tel" placeholder="(85) 9____-____">
+          </div>
+          <div>
+            <label>Endereço padrão (opcional)</label>
+            <input type="text" id="ca-endereco" placeholder="Rua, número — Barra do Ceará">
+          </div>
+          <div>
+            <label>Senha</label>
+            <input type="password" id="ca-senha" minlength="4" required>
+          </div>
+          <div>
+            <label>Confirmar senha</label>
+            <input type="password" id="ca-senha2" minlength="4" required>
+          </div>
+          <p id="cadastroError" style="color:var(--red-dark); font-size:.8rem; display:none;"></p>
+          <button type="submit" class="submit-btn">Criar conta</button>
+        </form>
+      </div>
+      <p style="font-size:.76rem; color:var(--gray); margin-top:14px;">Conta local — os dados ficam salvos apenas neste navegador, em um banco de dados temporário (veja abaixo), sem servidor externo.</p>
+    </div>
+
+    <div id="contaLoggedIn" class="reveal" style="display:none;">
+      <div class="basket-card" style="max-width:420px;">
+        <span class="tag">Conta ativa</span>
+        <h3 id="contaWelcome" style="font-size:1.4rem; font-family:'Fraunces'; font-weight:700;"></h3>
+        <p id="contaEmailShow" style="color:#CFC5C3; font-size:.85rem; margin-top:6px;"></p>
+        <div style="display:flex; gap:10px; margin-top:20px; flex-wrap:wrap;">
+          <button class="submit-btn" id="contaGoOrdersBtn">📦 Meus pedidos</button>
+          <button class="a11y-reset" id="contaLogoutBtn" style="width:auto; color:#FF6FA3; border-color:rgba(255,255,255,.3);">Sair da conta</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-head reveal" style="margin-top:56px;">
+      <div class="eyebrow">Modo de desenvolvimento</div>
+      <h2>Banco de dados temporário (só para testes)</h2>
+      <p>Usuários, pedidos e reportes deste site ficam guardados em <strong>sessionStorage</strong> — um banco de dados temporário que existe apenas durante essa aba do navegador e some ao fechá-la. Ideal para testar o site sem deixar dado nenhum permanente.</p>
+    </div>
+    <div class="db-panel reveal">
+      <div class="db-stats">
+        <div class="stat-pill"><div class="num" id="dbUsersCount">0</div><div class="lbl">usuários cadastrados</div></div>
+        <div class="stat-pill"><div class="num" id="dbOrdersCount">0</div><div class="lbl">pedidos no banco</div></div>
+        <div class="stat-pill"><div class="num" id="dbReportsCount">0</div><div class="lbl">reportes no banco</div></div>
+      </div>
+      <div class="db-actions">
+        <button class="a11y-reset" id="dbToggleJson" style="width:auto;">🔍 Ver dados brutos (JSON)</button>
+        <button class="a11y-reset" id="dbResetBtn" style="width:auto; color:var(--red-dark); border-color:var(--red-soft);">🗑️ Limpar banco de teste</button>
+      </div>
+      <pre class="db-json" id="dbJsonView"></pre>
+    </div>
   </div>
 </section>
 
@@ -1056,10 +1201,8 @@ reportTabs.forEach(b=>{
 });
 
 const reportsList = document.getElementById('reportsList');
-function loadReports(){
-  try{ return JSON.parse(localStorage.getItem('radarBarraReports')||'[]'); }catch(e){ return []; }
-}
-function saveReports(list){ localStorage.setItem('radarBarraReports', JSON.stringify(list)); }
+function loadReports(){ return dbGet(DB_KEYS.reports); }
+function saveReports(list){ dbSet(DB_KEYS.reports, list); if(typeof renderDbPanel==='function') renderDbPanel(); }
 function renderReports(){
   const list = loadReports();
   if(!list.length){ reportsList.innerHTML = '<p style="color:var(--gray); font-size:.86rem;">Nenhum reporte ainda. Seja o primeiro a contribuir!</p>'; return; }
@@ -1096,7 +1239,7 @@ document.getElementById('formVenc').addEventListener('submit', e=>{
 
 /* ===================== NAV / SCROLLSPY ===================== */
 const navButtons = document.querySelectorAll('nav button');
-const sections = ['precos','mercados','pedidos','finalidade','tutorial','reportar'].map(id=>document.getElementById(id));
+const sections = ['precos','mercados','pedidos','conta','finalidade','tutorial','reportar'].map(id=>document.getElementById(id));
 navButtons.forEach(btn=>{
   btn.addEventListener('click', ()=>{
     document.getElementById(btn.dataset.target).scrollIntoView({behavior:'smooth'});
@@ -1331,6 +1474,8 @@ let deliveryMode = 'retirada';
 document.getElementById('goCheckoutBtn').addEventListener('click', ()=>{
   if(!cart.length) return;
   closeCart();
+  if(!requireLogin('checkout')) return;
+  prefillCheckout();
   checkoutOverlay.classList.add('open');
 });
 document.getElementById('checkoutCloseBtn').addEventListener('click', ()=>checkoutOverlay.classList.remove('open'));
@@ -1348,8 +1493,8 @@ document.querySelectorAll('#deliverySeg button').forEach(b=>{
 });
 document.getElementById('addressField').classList.add('hidden');
 
-function loadOrders(){ try{ return JSON.parse(localStorage.getItem('radarBarraOrders')||'[]'); }catch(e){ return []; } }
-function saveOrders(list){ localStorage.setItem('radarBarraOrders', JSON.stringify(list)); }
+function loadOrders(){ return dbGet(DB_KEYS.orders); }
+function saveOrders(list){ dbSet(DB_KEYS.orders, list); if(typeof renderDbPanel==='function') renderDbPanel(); }
 
 document.getElementById('checkoutForm').addEventListener('submit', e=>{
   e.preventDefault();
@@ -1360,7 +1505,8 @@ document.getElementById('checkoutForm').addEventListener('submit', e=>{
     total: cartSubtotal() + (deliveryMode==='entrega'?5:0), mode: deliveryMode,
     nome: document.getElementById('co-nome').value, endereco: document.getElementById('co-endereco').value,
     pagamento: document.getElementById('co-pagamento').value, date: new Date().toLocaleDateString('pt-BR'),
-    time: new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}), status: 0
+    time: new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}), status: 0,
+    email: currentUser() ? currentUser().email : null
   };
   orders.push(order); saveOrders(orders);
   cart = []; renderCart(); renderOrderGrid();
@@ -1413,7 +1559,8 @@ statusOverlay.addEventListener('click', e=>{ if(e.target===statusOverlay) status
 /* ---- Meus pedidos ---- */
 const myOrdersOverlay = document.getElementById('myOrdersOverlay');
 document.getElementById('openMyOrders').addEventListener('click', ()=>{
-  const orders = loadOrders().slice().reverse();
+  if(!requireLogin('pedidos')) return;
+  const orders = loadOrders().slice().reverse().filter(o=>o.email===currentUser().email);
   const list = document.getElementById('myOrdersList');
   list.innerHTML = orders.length ? orders.map(o=>`
     <div class="myorder-item">
@@ -1441,6 +1588,212 @@ document.addEventListener('keydown', e=>{
 renderMarketChips();
 renderOrderGrid();
 renderCart();
+
+/* ===================== CADASTRO / LOGIN — banco de dados temporário ===================== */
+// "DB" de teste: usuários, pedidos e reportes ficam em sessionStorage —
+// dura só enquanto esta aba do navegador estiver aberta. Ao fechar a aba,
+// o "banco" some sozinho. Não é um sistema de segurança real (não use
+// senhas que você usa em outros lugares) — é uma simulação para testes.
+const DB_KEYS = {users:'radarBarraUsers', orders:'radarBarraOrders', reports:'radarBarraReports', session:'radarBarraSession'};
+
+function dbGet(key){ try{ return JSON.parse(sessionStorage.getItem(key)||'[]'); }catch(e){ return []; } }
+function dbSet(key, val){ sessionStorage.setItem(key, JSON.stringify(val)); }
+
+function simpleHash(str){
+  let hash = 0;
+  for(let i=0;i<str.length;i++){ hash = ((hash<<5)-hash) + str.charCodeAt(i); hash |= 0; }
+  return Math.abs(hash).toString(36);
+}
+function hashPass(email, senha){ return simpleHash(email.trim().toLowerCase()+'::'+senha); }
+
+function getUsers(){ return dbGet(DB_KEYS.users); }
+function saveUsers(list){ dbSet(DB_KEYS.users, list); renderDbPanel(); }
+function getSessionEmail(){ return sessionStorage.getItem(DB_KEYS.session); }
+function setSessionEmail(email){ sessionStorage.setItem(DB_KEYS.session, email); }
+function clearSession(){ sessionStorage.removeItem(DB_KEYS.session); }
+function currentUser(){
+  const email = getSessionEmail();
+  if(!email) return null;
+  return getUsers().find(u=>u.email===email) || null;
+}
+
+const authArea = document.getElementById('authArea');
+let pendingAction = null; // 'checkout' | 'pedidos'
+
+function renderAuthArea(){
+  const user = currentUser();
+  if(!user){
+    authArea.innerHTML = `<button class="auth-btn-login" id="authLoginBtn">Entrar</button>`;
+    document.getElementById('authLoginBtn').addEventListener('click', ()=>goToConta());
+    renderContaSection();
+    return;
+  }
+  const initials = user.name.trim().split(/\s+/).slice(0,2).map(w=>w[0].toUpperCase()).join('');
+  authArea.innerHTML = `
+    <button class="user-pill" id="userPillBtn">
+      <span class="user-avatar">${initials}</span>
+      <span class="uname">${user.name.split(' ')[0]}</span>
+    </button>
+    <div class="user-dropdown" id="userDropdown">
+      <button id="ddMeusPedidos">📦 Meus pedidos</button>
+      <button class="logout" id="ddLogout">Sair</button>
+    </div>
+  `;
+  document.getElementById('userPillBtn').addEventListener('click', e=>{
+    e.stopPropagation();
+    document.getElementById('userDropdown').classList.toggle('open');
+  });
+  document.getElementById('ddMeusPedidos').addEventListener('click', ()=>{
+    document.getElementById('userDropdown').classList.remove('open');
+    document.getElementById('openMyOrders').click();
+  });
+  document.getElementById('ddLogout').addEventListener('click', ()=>{
+    clearSession(); renderAuthArea(); renderCart();
+    document.getElementById('userDropdown').classList.remove('open');
+  });
+  renderContaSection();
+}
+
+document.addEventListener('click', ()=>{
+  const dd = document.getElementById('userDropdown');
+  if(dd) dd.classList.remove('open');
+});
+
+/* ---- Seção Conta: mostra tabs de login/cadastro OU card de conta ativa ---- */
+function renderContaSection(){
+  const user = currentUser();
+  const loggedOut = document.getElementById('contaLoggedOut');
+  const loggedIn = document.getElementById('contaLoggedIn');
+  if(user){
+    loggedOut.style.display = 'none';
+    loggedIn.style.display = 'block';
+    document.getElementById('contaWelcome').textContent = 'Olá, ' + user.name.split(' ')[0] + '!';
+    document.getElementById('contaEmailShow').textContent = user.email;
+  } else {
+    loggedOut.style.display = 'block';
+    loggedIn.style.display = 'none';
+  }
+}
+
+function goToConta(){
+  const el = document.getElementById('conta');
+  el.scrollIntoView({behavior:'smooth'});
+  el.classList.add('conta-flash');
+  setTimeout(()=>el.classList.remove('conta-flash'), 1500);
+}
+
+// Se o carrinho ou "meus pedidos" precisar de login, manda pra aba Conta.
+function requireLogin(action){
+  if(currentUser()) return true;
+  pendingAction = action;
+  goToConta();
+  return false;
+}
+
+const contaTabs = document.querySelectorAll('#contaTabs button');
+contaTabs.forEach(b=>{
+  b.addEventListener('click', ()=>{
+    contaTabs.forEach(x=>x.classList.remove('active')); b.classList.add('active');
+    document.getElementById('form-login').classList.toggle('active', b.dataset.form==='login');
+    document.getElementById('form-cadastro').classList.toggle('active', b.dataset.form==='cadastro');
+  });
+});
+
+function proceedAfterAuth(){
+  renderAuthArea();
+  if(pendingAction==='checkout'){
+    prefillCheckout();
+    checkoutOverlay.classList.add('open');
+  } else if(pendingAction==='pedidos'){
+    document.getElementById('openMyOrders').click();
+  }
+  pendingAction = null;
+}
+
+document.getElementById('loginForm').addEventListener('submit', e=>{
+  e.preventDefault();
+  const email = document.getElementById('li-email').value.trim().toLowerCase();
+  const senha = document.getElementById('li-senha').value;
+  const user = getUsers().find(u=>u.email===email);
+  const errEl = document.getElementById('loginError');
+  if(!user || user.passHash !== hashPass(email, senha)){
+    errEl.style.display='block'; return;
+  }
+  errEl.style.display='none';
+  setSessionEmail(email);
+  e.target.reset();
+  proceedAfterAuth();
+});
+
+document.getElementById('cadastroForm').addEventListener('submit', e=>{
+  e.preventDefault();
+  const nome = document.getElementById('ca-nome').value.trim();
+  const email = document.getElementById('ca-email').value.trim().toLowerCase();
+  const tel = document.getElementById('ca-tel').value.trim();
+  const endereco = document.getElementById('ca-endereco').value.trim();
+  const senha = document.getElementById('ca-senha').value;
+  const senha2 = document.getElementById('ca-senha2').value;
+  const errEl = document.getElementById('cadastroError');
+
+  const users = getUsers();
+  if(users.some(u=>u.email===email)){
+    errEl.textContent = 'Já existe uma conta com esse e-mail. Faça login.'; errEl.style.display='block'; return;
+  }
+  if(senha !== senha2){
+    errEl.textContent = 'As senhas não coincidem.'; errEl.style.display='block'; return;
+  }
+  errEl.style.display='none';
+  users.push({name:nome, email, phone:tel, address:endereco, passHash:hashPass(email, senha)});
+  saveUsers(users);
+  setSessionEmail(email);
+  e.target.reset();
+  proceedAfterAuth();
+});
+
+document.getElementById('contaGoOrdersBtn').addEventListener('click', ()=>document.getElementById('openMyOrders').click());
+document.getElementById('contaLogoutBtn').addEventListener('click', ()=>{ clearSession(); renderAuthArea(); renderCart(); });
+
+function prefillCheckout(){
+  const user = currentUser();
+  if(!user) return;
+  document.getElementById('co-nome').value = user.name || '';
+  document.getElementById('co-tel').value = user.phone || '';
+  if(user.address) document.getElementById('co-endereco').value = user.address;
+}
+
+/* ---- Painel do banco de dados de teste ---- */
+function renderDbPanel(){
+  document.getElementById('dbUsersCount').textContent = getUsers().length;
+  document.getElementById('dbOrdersCount').textContent = loadOrders().length;
+  document.getElementById('dbReportsCount').textContent = loadReports().length;
+  const jsonView = document.getElementById('dbJsonView');
+  if(jsonView.classList.contains('open')){
+    jsonView.textContent = JSON.stringify({
+      usuarios: getUsers().map(u=>({name:u.name, email:u.email, phone:u.phone, address:u.address, passHash:u.passHash})),
+      pedidos: loadOrders(),
+      reportes: loadReports()
+    }, null, 2);
+  }
+}
+document.getElementById('dbToggleJson').addEventListener('click', ()=>{
+  const jsonView = document.getElementById('dbJsonView');
+  jsonView.classList.toggle('open');
+  renderDbPanel();
+});
+document.getElementById('dbResetBtn').addEventListener('click', ()=>{
+  if(!confirm('Isso vai apagar todos os usuários, pedidos e reportes deste banco de teste. Continuar?')) return;
+  sessionStorage.removeItem(DB_KEYS.users);
+  sessionStorage.removeItem(DB_KEYS.orders);
+  sessionStorage.removeItem(DB_KEYS.reports);
+  sessionStorage.removeItem(DB_KEYS.session);
+  cart = []; renderCart(); renderOrderGrid();
+  renderAuthArea();
+  renderReports();
+  renderDbPanel();
+});
+
+renderAuthArea();
+renderDbPanel();
 
 /* ===================== INIT ===================== */
 updateCounts();
